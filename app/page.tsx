@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 // Target Wedding Date (Adjustable)
-const WEDDING_DATE = new Date("2027-07-22T17:00:00+02:00").getTime();
+const WEDDING_DATE = new Date("2026-11-15T19:00:00+01:00").getTime();
 
 export default function Home() {
   const [opened, setOpened] = useState(false);
@@ -16,9 +16,7 @@ export default function Home() {
   const [songRequest, setSongRequest] = useState("");
   const [message, setMessage] = useState("");
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const isPlayingRef = useRef(false);
-  const timerRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [time, setTime] = useState({
     days: "000",
@@ -42,83 +40,25 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Soft Calm Romantic Music Synthesizer
+  // ♫ Perfect – Ed Sheeran (real MP3 file)
   const startRomanticMusic = () => {
     try {
-      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtxClass) return;
-
-      if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
-        audioCtxRef.current = new AudioCtxClass();
+      if (!audioRef.current) {
+        audioRef.current = new Audio("/Ed Sheeran - Perfect (Official Music Video).mp3");
+        audioRef.current.loop = true;
+        audioRef.current.volume = 0.55;
+        audioRef.current.currentTime = 20; // Démarre à la seconde 20
       }
-
-      const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-
-      if (isPlayingRef.current) return;
-      isPlayingRef.current = true;
-
-      const romanticChords = [
-        [261.63, 329.63, 392.00, 523.25], // C Major
-        [220.00, 261.63, 329.63, 440.00], // A Minor
-        [174.61, 220.00, 261.63, 349.23], // F Major
-        [196.00, 246.94, 293.66, 392.00], // G Major
-      ];
-
-      let chordIndex = 0;
-
-      const playChordSequence = () => {
-        if (!isPlayingRef.current || !audioCtxRef.current) return;
-        const currentCtx = audioCtxRef.current;
-        if (currentCtx.state === "closed") return;
-
-        if (currentCtx.state === "suspended") {
-          currentCtx.resume().catch(() => {});
-        }
-
-        const chord = romanticChords[chordIndex % romanticChords.length];
-        const now = currentCtx.currentTime;
-
-        chord.forEach((freq, i) => {
-          try {
-            const osc = currentCtx.createOscillator();
-            const gain = currentCtx.createGain();
-
-            osc.type = "sine";
-            osc.frequency.setValueAtTime(freq, now + i * 0.35);
-
-            gain.gain.setValueAtTime(0.001, now + i * 0.35);
-            gain.gain.exponentialRampToValueAtTime(0.06, now + i * 0.35 + 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.35 + 2.4);
-
-            osc.connect(gain);
-            gain.connect(currentCtx.destination);
-
-            osc.start(now + i * 0.35);
-            osc.stop(now + i * 0.35 + 2.5);
-          } catch (e) {}
-        });
-
-        chordIndex++;
-        timerRef.current = setTimeout(playChordSequence, 2800);
-      };
-
-      playChordSequence();
+      audioRef.current.play().catch(() => {});
     } catch (e) {}
   };
 
   const stopRomanticMusic = () => {
-    isPlayingRef.current = false;
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-    if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
-      try {
-        audioCtxRef.current.suspend();
-      } catch (e) {}
-    }
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+    } catch (e) {}
   };
 
   useEffect(() => {
@@ -128,7 +68,7 @@ export default function Home() {
       stopRomanticMusic();
     }
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (audioRef.current) audioRef.current.pause();
     };
   }, [sound]);
 
@@ -136,23 +76,6 @@ export default function Home() {
     setOpening(true);
     setSound(true);
     startRomanticMusic();
-
-    // Opening sound chime
-    try {
-      const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      const ctx = new AudioCtxClass();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(523.25, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.8);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.8);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.8);
-    } catch (e) {}
 
     setTimeout(() => {
       setOpened(true);
@@ -208,7 +131,7 @@ export default function Home() {
                     Ont la joie de vous inviter à célébrer leur union
                   </div>
                   <div style={{ fontSize: "11px", fontWeight: "600", color: "var(--red-crimson)", marginTop: "8px" }}>
-                    22 JUILLET 2027 • HÔTEL SHERATON TUNIS
+                    15 NOVEMBRE 2026 • HÔTEL SHERATON TUNIS
                   </div>
                 </div>
                 <div className="envelope-pocket-front" />
@@ -247,7 +170,7 @@ export default function Home() {
             Avec la bénédiction de leurs familles, ont l'honneur et le plaisir de vous inviter à la célébration de leur mariage
           </p>
 
-          <div className="hero-date">JEUDI 22 JUILLET 2027</div>
+          <div className="hero-date">DIMANCHE 15 NOVEMBRE 2026</div>
         </section>
 
         {/* 2. COUNTDOWN SECTION */}
@@ -283,25 +206,21 @@ export default function Home() {
 
         {/* 3. VENUE & LOCATIONS (HOTEL SHERATON TUNIS - ORIGINAL HIGH-RES PHOTO) */}
         <section className="section-panel venue-section">
-          <span className="section-tag">Lieu de la célébration</span>
           <h2 className="section-heading">Lieu du Mariage</h2>
 
           {/* Hotel Sheraton Tunis Card */}
           <div className="venue-card">
             <span className="venue-tag">CÉRÉMONIE & RÉCEPTION</span>
             <h3 className="venue-title">Hôtel Sheraton Tunis</h3>
-            <div className="venue-time">À partir de 17:00 PM</div>
+            <div className="venue-time">À partir de 19:00</div>
             
             {/* Real Original High-Resolution Photo of Hotel Sheraton Tunis */}
             <div className="venue-image-frame">
               <img src="/images/sheraton_tunis.jpg" alt="Hôtel Sheraton Tunis" />
             </div>
 
-            <p style={{ fontSize: "13px", color: "var(--red-deep)", fontWeight: "600", margin: "14px 0 4px 0" }}>
+            <p style={{ fontSize: "13px", color: "var(--red-deep)", fontWeight: "600", margin: "14px 0 16px 0" }}>
               Avenue de la Ligue Arabe, Le Belvédère, Tunis
-            </p>
-            <p style={{ fontSize: "12px", color: "#666", marginBottom: "16px" }}>
-              Rejoignez-nous pour la cérémonie suivie du cocktail d'accueil et du dîner de gala dans la grande salle de réception de l'Hôtel Sheraton Tunis.
             </p>
             <a
               href="https://maps.google.com/?q=Hotel+Sheraton+Tunis"
@@ -320,7 +239,7 @@ export default function Home() {
           <h2 className="section-heading">Programme de la Journée</h2>
 
           <div className="program-timeline">
-            {/* Item 1 */}
+            {/* Item 1 – Accueil */}
             <div className="program-item">
               <div className="program-icon-badge">
                 <svg viewBox="0 0 24 24">
@@ -328,38 +247,25 @@ export default function Home() {
                 </svg>
               </div>
               <div className="program-details">
-                <small>17:00</small>
-                <h4>Cérémonie d'Accueil</h4>
+                <small>19:00</small>
+                <h4>Accueil des Invités</h4>
               </div>
             </div>
 
-            {/* Item 2 */}
+            {/* Item 2 – Signature contrat */}
             <div className="program-item">
               <div className="program-icon-badge">
                 <svg viewBox="0 0 24 24">
-                  <path d="M8 22h8M12 17v5M5 3h14l-7 8z" />
-                </svg>
-              </div>
-              <div className="program-details">
-                <small>18:30</small>
-                <h4>Cocktail & Vin d'Honneur</h4>
-              </div>
-            </div>
-
-            {/* Item 3 */}
-            <div className="program-item">
-              <div className="program-icon-badge">
-                <svg viewBox="0 0 24 24">
-                  <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+                  <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                 </svg>
               </div>
               <div className="program-details">
                 <small>20:00</small>
-                <h4>Dîner de Gala</h4>
+                <h4>Signature du Contrat de Mariage</h4>
               </div>
             </div>
 
-            {/* Item 4 */}
+            {/* Item 3 – Soirée */}
             <div className="program-item">
               <div className="program-icon-badge">
                 <svg viewBox="0 0 24 24">
@@ -367,8 +273,8 @@ export default function Home() {
                 </svg>
               </div>
               <div className="program-details">
-                <small>22:30</small>
-                <h4>Soirée Dansante & Festivités</h4>
+                <small>20:30</small>
+                <h4>Soirée & Festivités</h4>
               </div>
             </div>
           </div>
@@ -380,7 +286,7 @@ export default function Home() {
           <h2 className="section-heading" style={{ color: "#ffffff" }}>CONFIRMER VOTRE PRÉSENCE</h2>
 
           <p style={{ fontSize: "13px", color: "var(--rose-blush)", marginBottom: "20px" }}>
-            Mohamed & Mayssen ont hâte de célébrer ce moment magique avec vous ! Merci de nous répondre avant le 1er Juin 2027.
+            Mohamed & Mayssen ont hâte de célébrer ce moment magique avec vous ! Merci de nous répondre avant le 1er Octobre 2026.
           </p>
 
           {sent ? (
@@ -425,7 +331,7 @@ export default function Home() {
                 </button>
               </div>
 
-              {attending && (
+              {attending === true && (
                 <>
                   <label>Nombre d'invités</label>
                   <select value={guestCount} onChange={(e) => setGuestCount(e.target.value)}>
@@ -454,7 +360,7 @@ export default function Home() {
               )}
 
               <button type="submit" className="submit-rsvp-btn">
-                CONFIRMER MA PRÉSENCE
+                {attending === false ? "CONFIRMER MON ABSENCE" : "CONFIRMER MA PRÉSENCE"}
               </button>
             </form>
           )}
@@ -467,7 +373,7 @@ export default function Home() {
 
           <div className="action-buttons-row">
             <a
-              href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Mariage+de+Mohamed+%26+Mayssen&dates=20270722T150000Z/20270722T230000Z&details=C%C3%A9r%C3%A9monie+et+R%C3%A9ception+H%C3%B4tel+Sheraton+Tunis"
+              href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=Mariage+de+Mohamed+%26+Mayssen&dates=20261115T180000Z/20261116T000000Z&details=C%C3%A9r%C3%A9monie+et+R%C3%A9ception+H%C3%B4tel+Sheraton+Tunis"
               target="_blank"
               rel="noreferrer"
               className="action-btn"
@@ -501,7 +407,7 @@ export default function Home() {
 
           <div className="footer-monogram">M & M</div>
           <div className="footer-message">MERCI DE CÉLÉBRER CE MOMENT MAGIQUE AVEC NOUS</div>
-          <div className="footer-date">22 JUILLET 2027 • HÔTEL SHERATON TUNIS</div>
+          <div className="footer-date">15 NOVEMBRE 2026 • HÔTEL SHERATON TUNIS</div>
 
           <small style={{ fontSize: "11px", fontStyle: "italic", opacity: "0.8", marginTop: "16px" }}>
             Mohamed & Mayssen
