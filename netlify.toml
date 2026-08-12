@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist/client"
+
+[build.environment]
+  # This project builds with vinext (a Vite-based Next.js-compatible toolchain), not
+  # the standard `next build`, so no `.next` directory is ever produced. Skip Netlify's
+  # automatic Next.js Runtime detection/plugin, which otherwise expects `.next` and fails.
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
