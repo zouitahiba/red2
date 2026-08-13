@@ -1,33 +1,27 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-
-test("renders development preview metadata", async () => {
-  const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
-  const { default: worker } = await import(workerUrl.href);
-
-  const response = await worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
+test("uses the Netlify Next.js build output", async () => {
+  const netlifyConfig = await readFile(
+    new URL("../netlify.toml", import.meta.url),
+    "utf8",
+  );
+  const packageJson = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
   );
 
-  assert.equal(response.status, 200);
-  assert.match(
-    response.headers.get("content-type") ?? "",
-    /^text\/html\b/i,
+  assert.match(netlifyConfig, /publish\s*=\s*["']\.next["']/);
+  assert.doesNotMatch(netlifyConfig, /NETLIFY_NEXT_PLUGIN_SKIP/);
+  assert.equal(packageJson.scripts.build, "next build");
+});
+
+test("defines the home page metadata", async () => {
+  const layout = await readFile(
+    new URL("../app/layout.tsx", import.meta.url),
+    "utf8",
   );
-  assert.match(await response.text(), developmentPreviewMeta);
+
+  assert.match(layout, /title:\s*["']Invitation Digitale Rouge["']/);
+  assert.match(layout, /<html lang=["']fr["']>/);
 });
