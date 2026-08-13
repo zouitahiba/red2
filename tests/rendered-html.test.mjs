@@ -16,12 +16,12 @@ test("uses the Netlify Next.js build output", async () => {
   assert.equal(packageJson.scripts.build, "next build");
 });
 
-test("defines the home page metadata", async () => {
+test("does not add a title header to the shared link", async () => {
   const layout = await readFile(
     new URL("../app/layout.tsx", import.meta.url),
     "utf8",
   );
 
-  assert.match(layout, /title:\s*["']Invitation Digitale Rouge["']/);
+  assert.doesNotMatch(layout, /title:\s*["']/);
   assert.match(layout, /<html lang=["']fr["']>/);
 });

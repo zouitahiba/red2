@@ -13,7 +13,6 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invitation Digitale Rouge",
   description: "L’invitation de mariage de Maximilian et Aurora.",
   other: {
     "codex-preview": "development",
